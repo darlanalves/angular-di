@@ -1,0 +1,14 @@
+{
+    "name": "angular-di",
+    "version": "1.0.0",
+    "description": "Wrapper for Angular 1.x module syntax",
+    "main": "di.js",
+    "dependencies": {
+        "angular": "*"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC"
+}
