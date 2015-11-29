@@ -22,27 +22,77 @@
 const angular = window.angular;
 let modules = {};
 
-function makeModule (name, dependencies = []) {
-    if (name in modules) {
-        return modules[name];
+class ModuleWrapper {
+    constructor(name, dependencies) {
+        this.name = name;
+        this.ngModule = angular.module(name, getDependencies(dependencies));
     }
 
-    const ngModule = angular.module(name, getDependencies(dependencies));
-    const wrapper = {
-        name: name,
-        service: batchRegister('service', ngModule),
-        controller: batchRegister('controller', ngModule),
-        directive: batchRegister('directive', ngModule),
-        filter: batchRegister('filter', ngModule),
-        value: batchRegister('value', ngModule),
-        config: ngModule.config.bind(ngModule),
-        run: ngModule.run.bind(ngModule),
-        routes: registerRoutes.bind(ngModule),
-        component: registerComponent.bind(ngModule),
-        decorator: registerDecorator.bind(ngModule)
-    };
+    service(objects) {
+        batchRegister('service', this.ngModule, objects);
+    }
 
-    return (modules[name] = wrapper);
+    controller(objects) {
+        batchRegister('controller', this.ngModule, objects);
+    }
+
+    filter(objects) {
+        batchRegister('filter', this.ngModule, objects);
+    }
+
+    value(objects) {
+        batchRegister('value', this.ngModule, objects);
+    }
+
+    provider(objects) {
+        batchRegister('provider', this.ngModule, objects);
+    }
+
+    onConfig(fn) {
+        this.ngModule.config(fn);
+    }
+
+    onRun(fn) {
+        this.ngModule.run(fn);
+    }
+
+    routes(routeTable) {
+        registerRoutes(this.ngModule, routeTable);
+    }
+
+    component(Component) {
+        registerComponent(this.ngModule, Component);
+    }
+
+    decorator(name, Decorator) {
+        registerDecorator(this.ngModule, name, Decorator);
+    }
+
+    /**
+     * @param {HTMLElement} element Element where the module should run
+     */
+    run(element) {
+        return runModule(element, this);
+    }
+}
+
+/**
+ * @param {Function} target Injectable factory
+ * @param {String[]} injections Array with the name of all injectable entities
+ */
+function inject (target, injections) {
+    target.$inject = injections;
+}
+
+class di {
+    /**
+     * Create or access a module by name
+     * @param {String} name Module name
+     * @param {String[]} [dependencies]
+     */
+    static module(name, dependencies = []) {
+        return makeModule(name, dependencies);
+    }
 }
 
 function runModule (rootElement, modl) {
@@ -54,23 +104,21 @@ function getDependencies (list) {
     return list.map(item => item.name || item);
 }
 
-function batchRegister (methodName, ngModule) {
-    return function registerAll(objects) {
-        Object.keys(objects).forEach(function register(key) {
-            let value = objects[key];
-            ngModule[methodName](key, value);
-        });
-    };
+function batchRegister (methodName, ngModule, objects) {
+    Object.keys(objects).forEach(function register(key) {
+        let value = objects[key];
+        ngModule[methodName](key, value);
+    });
 }
 
-function registerRoutes (routeTable) {
-    this.config(['$stateProvider', function registerStates(provider) {
+function registerRoutes (ngModule, routeTable) {
+    ngModule.config(['$stateProvider', function registerStates(provider) {
         angular.forEach(routeTable, (config, stateName) => provider.state(stateName, config));
     }]);
 }
 
-function registerDecorator (serviceName, decoratorFn) {
-    this.config(['$provide', function ($provide) {
+function registerDecorator (ngModule, serviceName, decoratorFn) {
+    ngModule.config(['$provide', function ($provide) {
         $provide.decorator(serviceName, decoratorFn);
     }]);
 }
@@ -79,7 +127,7 @@ const TYPE_ELEMENT = 'E';
 const TYPE_ATTRIBUTE = 'A';
 const TYPE_CLASS = 'C';
 
-function registerComponent (Component) {
+function registerComponent (ngModule, Component) {
     var name = String(Component.name || Component.selector);
     var type = TYPE_ELEMENT;
 
@@ -114,7 +162,7 @@ function registerComponent (Component) {
         directive.compile = Component.compile;
     }
 
-    this.directive(directive);
+    ngModule.directive(directive);
 }
 
 function isAttributeSelector (name) {
@@ -136,9 +184,15 @@ function camelize (match, part) {
     return part.replace(DASH, '').toUpperCase();
 }
 
-const di = {
-    module: makeModule,
-    run: runModule
-};
+function makeModule (name, dependencies) {
+    if (name in modules) {
+        return modules[name];
+    }
 
-export { di };
+    let wrapper = new ModuleWrapper(name, dependencies);
+
+    return (modules[name] = wrapper);
+}
+
+
+export { di, inject };
