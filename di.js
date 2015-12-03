@@ -7,25 +7,38 @@
  *     // load di, app units (services, components...) and run the app
  *
  *     import { di } from 'di';
+ *
+ *     // external dependencies
  *     import { uiRouter } from 'angular-ui-router';
+ *
  *     import { routes } from 'src/routes';
  *     import { FooService } from 'src/foo.service';
  *     import { BarService } from 'src/bar.service';
  *     import { FooComponent } from 'src/foo.component';
  *
- *     const app = di.module('app', [uiRouter]);
+ *     let app = di.module([ uiRouter, 'some.vendor.module' ]);
+ *
  *     app.component({ FooComponent });
  *     app.service({ FooService, BarService });
+ *     app.routes(routes);
  *
- *     di.run(document.body, app);
+ *     app.onConfig(() => {
+ *         // configure
+ *     });
+ *
+ *     app.onRun(() => {
+ *         // run
+ *     });
+ *
+ *     app.run(document.body);
  */
-const angular = window.angular;
-let modules = {};
+
+let UID = 0;
 
 class ModuleWrapper {
-    constructor(name, dependencies) {
-        this.name = name;
-        this.ngModule = angular.module(name, getDependencies(dependencies));
+    constructor(dependencies) {
+        this.name = createModuleName();
+        this.ngModule = window.angular.module(this.name, getDependencies(dependencies));
     }
 
     service(objects) {
@@ -76,49 +89,41 @@ class ModuleWrapper {
     }
 }
 
-/**
- * @param {Function} target Injectable factory
- * @param {String[]} injections Array with the name of all injectable entities
- */
-function inject (target, injections) {
-    target.$inject = injections;
+function createModuleName () {
+    UID++;
+    return `module-${UID}`;
 }
 
-class di {
-    /**
-     * Create or access a module by name
-     * @param {String} name Module name
-     * @param {String[]} [dependencies]
-     */
-    static module(name, dependencies = []) {
-        return makeModule(name, dependencies);
-    }
+function getInjectionList(injections) {
+    if (Array.isArray(injections)) return injections;
+
+    return injections.split(/,\s?/);
 }
 
-function runModule (rootElement, modl) {
+function runModule(rootElement, modl) {
     let name = modl.name;
     window.angular.bootstrap(rootElement, [name]);
 }
 
-function getDependencies (list) {
+function getDependencies(list) {
     return list.map(item => item.name || item);
 }
 
-function batchRegister (methodName, ngModule, objects) {
+function batchRegister(methodName, ngModule, objects) {
     Object.keys(objects).forEach(function register(key) {
         let value = objects[key];
         ngModule[methodName](key, value);
     });
 }
 
-function registerRoutes (ngModule, routeTable) {
+function registerRoutes(ngModule, routeTable) {
     ngModule.config(['$stateProvider', function registerStates(provider) {
-        angular.forEach(routeTable, (config, stateName) => provider.state(stateName, config));
+        window.angular.forEach(routeTable, (config, stateName) => provider.state(stateName, config));
     }]);
 }
 
-function registerDecorator (ngModule, serviceName, decoratorFn) {
-    ngModule.config(['$provide', function ($provide) {
+function registerDecorator(ngModule, serviceName, decoratorFn) {
+    ngModule.config(['$provide', function($provide) {
         $provide.decorator(serviceName, decoratorFn);
     }]);
 }
@@ -127,7 +132,32 @@ const TYPE_ELEMENT = 'E';
 const TYPE_ATTRIBUTE = 'A';
 const TYPE_CLASS = 'C';
 
-function registerComponent (ngModule, Component) {
+/**
+ * Register a directive using a more friendly interface
+ * @example
+ *     class CustomTabset {
+ *         static compile() {}
+ *
+ *         static link() {}
+ *
+ *         static configure() {
+ *             return CustomTabsetComponent
+ *         }
+ *
+ *         openTab(id) {}
+ *     }
+ *
+ *     let CustomTabsetComponent = {
+ *         selector: '[custom-tabset]',
+ *         replace: true,
+ *         templateUrl: 'tabs/tabset.html',
+ *         require: 'otherDirective',
+ *         bind: {
+ *             active: '='
+ *         }
+ *     }
+ */
+function registerComponent(ngModule, Component) {
     var name = String(Component.name || Component.selector);
     var type = TYPE_ELEMENT;
 
@@ -165,34 +195,46 @@ function registerComponent (ngModule, Component) {
     ngModule.directive(directive);
 }
 
-function isAttributeSelector (name) {
+function isAttributeSelector(name) {
     return (name.charAt[0] === '[');
 }
 
-function isClassSelector (name) {
+function isClassSelector(name) {
     return (name.charAt(0) === '.');
 }
 
 const DASH_CASE = /([-]{1,}[a-z]{1})/g;
 const DASH = /-/g;
 
-function toCamelCase (value) {
+function toCamelCase(value) {
     return String(value).replace(DASH_CASE, camelize);
 }
 
-function camelize (match, part) {
+function camelize(match, part) {
     return part.replace(DASH, '').toUpperCase();
 }
 
-function makeModule (name, dependencies) {
-    if (name in modules) {
-        return modules[name];
+class di {
+    /**
+     * Create or access a module by name
+     * @param {String} name Module name
+     * @param {String[]} [dependencies]
+     */
+    static module(dependencies = []) {
+        return new ModuleWrapper(dependencies);
     }
 
-    let wrapper = new ModuleWrapper(name, dependencies);
-
-    return (modules[name] = wrapper);
+    /**
+     * @ignore
+     * @param {Function} target Injectable factory
+     * @param {String|String[]} injections Array with the name of all injectable entities
+     * @example
+     *     inject(MyController, 'foo, bar, baz');
+     *     inject(MyController, ['foo', 'bar', 'baz']);
+     */
+    static inject(target, injections) {
+        target.$inject = getInjectionList(injections);
+    }
 }
 
-
-export { di, inject };
+export { di };
