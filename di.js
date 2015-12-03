@@ -73,8 +73,13 @@ class ModuleWrapper {
         registerRoutes(this.ngModule, routeTable);
     }
 
-    component(Component) {
-        registerComponent(this.ngModule, Component);
+    component(objects) {
+        let modl = this.ngModule;
+
+        Object.keys(objects).forEach(function register(key) {
+            let value = objects[key];
+            registerComponent(modl, value);
+        });
     }
 
     decorator(name, Decorator) {
@@ -158,7 +163,9 @@ const TYPE_CLASS = 'C';
  *     }
  */
 function registerComponent(ngModule, Component) {
-    var name = String(Component.name || Component.selector);
+    let config = Component.configure();
+
+    var name = config.name || config.selector;
     var type = TYPE_ELEMENT;
 
     if (isAttributeSelector(name)) {
@@ -173,15 +180,17 @@ function registerComponent(ngModule, Component) {
         type = TYPE_CLASS;
     }
 
+    let normalizedName = toCamelCase(name);
+
     let directive = {
         restrict: type,
-        replace: !!Component.replace,
-        templateUrl: Component.templateUrl,
+        replace: !!config.replace,
+        templateUrl: config.templateUrl,
         controller: Component,
-        require: Component.require,
-        controllerAs: name,
-        scope: Component.bind || true,
-        name: toCamelCase(name)
+        require: config.require,
+        controllerAs: normalizedName,
+        scope: config.bind || true,
+        name: normalizedName
     };
 
     if (Component.link) {
@@ -192,11 +201,13 @@ function registerComponent(ngModule, Component) {
         directive.compile = Component.compile;
     }
 
-    ngModule.directive(directive);
+    let factory = () => directive;
+
+    ngModule.directive(normalizedName, factory);
 }
 
 function isAttributeSelector(name) {
-    return (name.charAt[0] === '[');
+    return (name.charAt(0) === '[');
 }
 
 function isClassSelector(name) {
