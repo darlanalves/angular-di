@@ -11,7 +11,7 @@ With a better tooling, like browserify, babel and karma, you can write faster te
 Let's write a service
 
 ```js
-import { di } from 'di';
+import { di } from 'angular-di';
 import { FooService } from 'app/foo.service'
 
 class FooService {
@@ -43,7 +43,7 @@ Write a file to import your stuff
 
 ```
 
-import { di } from 'di';
+import { di } from 'angular-di';
 
 // external dependencies
 import uiRouter from 'angular-ui-router';
