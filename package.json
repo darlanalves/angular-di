@@ -1,12 +1,17 @@
 {
-    "name": "angular-di",
-    "version": "0.1.0",
-    "description": "Wrapper for Angular 1.x module syntax",
-    "main": "di.js",
-    "dependencies": {},
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "",
-    "license": "ISC"
+  "name": "angular-di",
+  "version": "0.2.0",
+  "description": "Wrapper for Angular 1.x module syntax",
+  "main": "di.es5.js",
+  "dependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.3.13",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-stage-1": "^6.3.13"
+  }
 }
