@@ -190,6 +190,7 @@ function registerComponent(ngModule, Component) {
         require: config.require,
         controllerAs: normalizedName,
         scope: config.bind || true,
+        priority: config.priority || 0,
         name: normalizedName
     };
 

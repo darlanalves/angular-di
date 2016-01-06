@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /**
  * Angular 1.x dependency injection wrapper for ES6 projects
@@ -32,8 +32,6 @@
  *
  *     app.run(document.body);
  */
-
-;
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -221,6 +219,7 @@ function registerComponent(ngModule, Component) {
         require: config.require,
         controllerAs: normalizedName,
         scope: config.bind || true,
+        priority: config.priority || 0,
         name: normalizedName
     };
 
