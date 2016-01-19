@@ -186,6 +186,7 @@ function registerComponent(ngModule, Component) {
         restrict: type,
         replace: !!config.replace,
         templateUrl: config.templateUrl,
+        template: config.template,
         controller: Component,
         require: config.require,
         controllerAs: normalizedName,
