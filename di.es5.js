@@ -287,7 +287,13 @@ var di = (function () {
     }, {
         key: 'inject',
         value: function inject(target, injections) {
-            target.$inject = getInjectionList(injections);
+            if (!injections) return;
+
+            var list = getInjectionList(injections);
+
+            if (list && list.length) {
+                target.$inject = list;
+            }
         }
     }]);
 

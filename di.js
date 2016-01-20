@@ -246,7 +246,13 @@ class di {
      *     inject(MyController, ['foo', 'bar', 'baz']);
      */
     static inject(target, injections) {
-        target.$inject = getInjectionList(injections);
+        if (!injections) return;
+
+        let list = getInjectionList(injections);
+
+        if (list && list.length) {
+            target.$inject = list;
+        }
     }
 }
 
