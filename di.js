@@ -157,7 +157,7 @@ const TYPE_CLASS = 'C';
  *         replace: true,
  *         templateUrl: 'tabs/tabset.html',
  *         require: 'otherDirective',
- *         bind: {
+ *         bindings: {
  *             active: '='
  *         }
  *     }
@@ -190,7 +190,7 @@ function registerComponent(ngModule, Component) {
         controller: Component,
         require: config.require,
         controllerAs: normalizedName,
-        scope: config.bind || true,
+        scope: config.bindings || true,
         priority: config.priority || 0,
         name: normalizedName
     };
