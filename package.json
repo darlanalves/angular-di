@@ -3,6 +3,7 @@
   "version": "0.2.4",
   "description": "Wrapper for Angular 1.x module syntax",
   "main": "di.es5.js",
+  "jsnext:main": "di.js",
   "dependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
