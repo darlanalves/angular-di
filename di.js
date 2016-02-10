@@ -181,6 +181,7 @@ function registerComponent(ngModule, Component) {
     }
 
     let normalizedName = toCamelCase(name);
+    let hasBindings = Boolean(config.bindings && typeof config.bindings === 'object');
 
     let directive = {
         restrict: type,
@@ -190,7 +191,8 @@ function registerComponent(ngModule, Component) {
         controller: Component,
         require: config.require,
         controllerAs: normalizedName,
-        scope: config.bindings || true,
+        scope: ('bindings' in config) ? config.bindings : true,
+        bindToController: hasBindings,
         priority: config.priority || 0,
         name: normalizedName
     };

@@ -39,6 +39,8 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var UID = 0;
@@ -210,6 +212,7 @@ function registerComponent(ngModule, Component) {
     }
 
     var normalizedName = toCamelCase(name);
+    var hasBindings = Boolean(config.bindings && _typeof(config.bindings) === 'object');
 
     var directive = {
         restrict: type,
@@ -219,7 +222,8 @@ function registerComponent(ngModule, Component) {
         controller: Component,
         require: config.require,
         controllerAs: normalizedName,
-        scope: config.bindings || true,
+        scope: 'bindings' in config ? config.bindings : true,
+        bindToController: hasBindings,
         priority: config.priority || 0,
         name: normalizedName
     };
