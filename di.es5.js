@@ -234,11 +234,32 @@ function registerComponent(ngModule, Component) {
         directive.compile = Component.compile;
     }
 
-    var factory = function factory() {
-        return directive;
-    };
+    var isComponent = isComponentConfiguration(directive);
 
-    ngModule.directive(normalizedName, factory);
+    // Angular 1.5 component
+    if (isComponent) {
+        directive = {
+            controller: Component,
+            bindings: 'bindings' in config ? config.bindings : {},
+            templateUrl: config.templateUrl,
+            template: config.template,
+            require: config.require || null,
+            controllerAs: config.alias || '$ctrl',
+            name: normalizedName
+        };
+        ngModule.component(normalizedName, directive);
+    } else {
+        var factory = function factory() {
+            return directive;
+        };
+        ngModule.directive(normalizedName, factory);
+    }
+}
+
+function isComponentConfiguration(directive) {
+    var isDirective = directive.link || directive.compile || directive.restrict !== 'E' || typeof directive.require === 'string' || Array.isArray(directive.require) || directive.priority;
+
+    return !isDirective;
 }
 
 function isAttributeSelector(name) {
