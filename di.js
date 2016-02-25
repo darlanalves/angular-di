@@ -190,7 +190,7 @@ function registerComponent(ngModule, Component) {
         template: config.template,
         controller: Component,
         require: config.require,
-        controllerAs: normalizedName,
+        controllerAs: config.alias || '$ctrl',
         scope: ('bindings' in config) ? config.bindings : true,
         bindToController: hasBindings,
         priority: config.priority || 0,
