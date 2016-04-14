@@ -256,7 +256,7 @@ function camelize(match, part) {
     return part.replace(DASH, '').toUpperCase();
 }
 
-class di {
+export default class di {
     /**
      * Create or access a module by name
      * @param {String} name Module name
@@ -284,5 +284,3 @@ class di {
         }
     }
 }
-
-export { di };

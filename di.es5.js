@@ -325,4 +325,4 @@ var di = (function () {
     return di;
 })();
 
-exports.di = di;
+exports.default = di;
