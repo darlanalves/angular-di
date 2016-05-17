@@ -92,6 +92,10 @@ class ModuleWrapper {
     run(element) {
         return runModule(element, this);
     }
+
+    injector() {
+        return angular.injector(['ng', this.ngModule.name]);
+    }
 }
 
 function createModuleName () {
