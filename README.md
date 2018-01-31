@@ -25,7 +25,7 @@ di.inject(FooService, '$http, $q')
 
 And a controller
 
-```
+```js
 
 class HomeController {
 	constructor(FooService) {
@@ -41,7 +41,7 @@ class HomeController {
 Write a file to import your stuff
 
 
-```
+```js
 
 import { di } from 'angular-di';
 
@@ -73,7 +73,7 @@ app.run(document.body);
 
 Routes
 
-```
+```js
 
 let routes = {
 	'app': {
